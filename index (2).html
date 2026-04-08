@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>履修プランナー — 経営学研究科 国際経営専攻</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f3ef;--surface:#fff;--s2:#eeede8;--border:#dedad1;--border2:#c8c4b8;--text:#1a1916;--t2:#68665e;--t3:#9e9b93;--acc:#1d4ed8;--acc-bg:#eff4ff;--green:#166534;--green-bg:#f0fdf4;--amber:#92400e;--amber-bg:#fffbeb;--red:#991b1b;--red-bg:#fef2f2;--purple:#5b21b6;--purple-bg:#f5f3ff;--sans:'Noto Sans JP',sans-serif;--mono:'DM Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:14px}
+.layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;position:sticky;top:0}
+.sb-head{padding:18px 16px 14px;border-bottom:1px solid var(--border)}
+.sb-head h1{font-size:13px;font-weight:700;line-height:1.4}
+.sb-head p{font-size:11px;color:var(--t3);margin-top:3px}
+.sb-body{flex:1;overflow-y:auto;padding:14px 12px}
+.main{padding:28px;min-height:100vh}
+.view-banner{background:var(--amber-bg);border:1px solid #fcd34d;border-radius:10px;padding:14px 18px;margin-bottom:24px;display:flex;align-items:flex-start;gap:12px}
+.view-banner .vb-icon{font-size:20px;flex-shrink:0}
+.view-banner .vb-text{font-size:13px;color:var(--amber);line-height:1.6}
+.view-banner .vb-text strong{display:block;font-weight:700;margin-bottom:2px}
+.cr-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+.cr-lbl{font-size:11px;color:var(--t2)}
+.cr-val{font-family:var(--mono);font-size:13px;font-weight:500}
+.cr-val.ok{color:var(--green)}.cr-val.warn{color:var(--amber)}.cr-val.err{color:var(--red)}
+.prog{background:var(--s2);border-radius:99px;height:4px;overflow:hidden;margin-bottom:8px}
+.prog-f{height:100%;border-radius:99px;transition:width .35s}
+.div{height:1px;background:var(--border);margin:12px 0}
+.nav-lbl{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);padding:6px 9px 4px}
+.nav{width:100%;text-align:left;padding:7px 9px;border-radius:6px;border:none;background:none;cursor:pointer;font-family:var(--sans);font-size:13px;color:var(--t2);display:flex;align-items:center;gap:8px;margin-bottom:2px;transition:background .12s,color .12s}
+.nav:hover{background:var(--s2);color:var(--text)}
+.nav.active{background:var(--acc-bg);color:var(--acc);font-weight:500}
+.nav .nc{margin-left:auto;font-family:var(--mono);font-size:11px;background:var(--s2);padding:1px 6px;border-radius:99px;color:var(--t3)}
+.nav.active .nc{background:#dbeafe;color:var(--acc)}
+.leg-item{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--t2);margin-bottom:5px}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.panel{display:none}.panel.active{display:block}
+.p-title{font-size:18px;font-weight:700;margin-bottom:6px}
+.p-sub{font-size:13px;color:var(--t2);margin-bottom:20px}
+.alert{display:none;border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:14px}
+.alert.show{display:block}
+.alert-warn{background:var(--amber-bg);color:var(--amber);border:1px solid #fcd34d}
+.alert-err{background:var(--red-bg);color:var(--red);border:1px solid #fca5a5}
+.sr{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.sr input,.sr select{font-family:var(--sans);font-size:13px;padding:7px 11px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);outline:none}
+.sr input{flex:1;min-width:180px}
+.sr input:focus,.sr select:focus{border-color:var(--acc)}
+.ri{font-size:11px;color:var(--t3);font-family:var(--mono);margin-bottom:10px}
+.tw{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--t3);padding:9px 12px;background:var(--s2);text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--acc-bg)}
+tbody td{padding:8px 12px;vertical-align:middle}
+.tn{font-family:var(--mono);font-size:11px;color:var(--t3);width:32px}
+.tna{font-weight:500;max-width:280px;line-height:1.4}
+.tp{font-size:12px;color:var(--t2);white-space:nowrap}
+.tc{font-family:var(--mono);font-size:11px;color:var(--t3);white-space:nowrap}
+.badge{display:inline-block;font-size:11px;padding:2px 7px;border-radius:99px;white-space:nowrap;line-height:1.4}
+.bd-t{background:var(--acc-bg);color:var(--acc)}.bd-j{background:var(--s2);color:var(--t3)}.bd-e{background:var(--purple-bg);color:var(--purple)}
+.btn{font-family:var(--sans);font-size:12px;padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:var(--surface);color:var(--t2);cursor:pointer;transition:all .12s;white-space:nowrap}
+.btn:hover{border-color:var(--border2);color:var(--text)}
+.btn-p{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn-p:hover{background:#1e40af}
+.btn-p:disabled{background:var(--green);border-color:var(--green);cursor:default;opacity:.85}
+.btn-d:hover{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+.sg-lbl{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);margin:18px 0 7px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between}
+.sg-lbl:first-child{margin-top:0}
+.sg-lbl span{font-family:var(--mono);font-weight:400}
+.si{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;display:flex;align-items:flex-start;gap:10px;margin-bottom:5px;transition:border-color .12s}
+.si:hover{border-color:var(--border2)}
+.si-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.si-info{flex:1;min-width:0}
+.si-name{font-size:13px;font-weight:500;line-height:1.4}
+.si-meta{font-size:11px;color:var(--t3);margin-top:2px}
+.si-ctrl{display:flex;gap:5px;align-items:center;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+.si-ctrl select{font-family:var(--sans);font-size:12px;padding:3px 6px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--text);outline:none}
+.si-cr{font-family:var(--mono);font-size:11px;color:var(--t3);flex-shrink:0}
+.empty{text-align:center;padding:56px 24px;color:var(--t3);font-size:13px}
+.empty-i{font-size:32px;margin-bottom:10px}
+.sc-ctrl{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.btn-tg{font-family:var(--sans);font-size:13px;padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--t2);cursor:pointer}
+.btn-tg.active{background:var(--text);color:#fff;border-color:var(--text)}
+.sc-ctrl select{font-family:var(--sans);font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);outline:none}
+.schw{overflow-x:auto;background:var(--surface);border:1px solid var(--border);border-radius:10px}
+.scht{width:100%;border-collapse:collapse;min-width:480px}
+.scht th{font-size:12px;font-weight:600;color:var(--t2);padding:7px 5px;text-align:center;background:var(--s2);border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
+.scht th:last-child{border-right:none}
+.scht td{border:1px solid var(--border);padding:3px;height:64px;vertical-align:top}
+.pc{background:var(--s2);text-align:center;width:58px;height:auto!important;padding:4px 2px!important;border-right:1px solid var(--border2)!important}
+.pn{font-family:var(--mono);font-size:13px;font-weight:600}
+.pt{font-size:9px;color:var(--t3);margin-top:1px;line-height:1.3}
+.sc-card{border-radius:4px;padding:3px 5px;font-size:10px;line-height:1.35;height:100%;overflow:hidden}
+.sc-card-n{font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sc-card-p{opacity:.65;font-size:9px;margin-top:1px}
+.jk-sec{margin-top:18px}
+.jk-lbl{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.jk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+.jk-card{background:var(--surface);border:1px solid var(--border);border-left-width:3px;border-radius:6px;padding:7px 10px}
+.jk-card-n{font-size:12px;font-weight:500}
+.jk-card-m{font-size:11px;color:var(--t3);margin-top:2px}
+/* モーダル */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border-radius:12px;padding:28px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h2{font-size:16px;font-weight:700;margin-bottom:4px}
+.modal .msub{font-size:12px;color:var(--t3);margin-bottom:20px;line-height:1.6}
+.fr{margin-bottom:12px}
+.fr label{display:block;font-size:11px;font-weight:600;color:var(--t2);margin-bottom:4px;letter-spacing:.04em;text-transform:uppercase}
+.fr input,.fr select,.fr textarea{width:100%;font-family:var(--sans);font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);outline:none}
+.fr input:focus,.fr select:focus,.fr textarea:focus{border-color:var(--acc)}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.fhint{font-size:11px;color:var(--t3);margin-top:3px;line-height:1.5}
+.m-act{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.bulk{width:100%;font-family:var(--mono);font-size:11px;padding:10px;border:1px solid var(--border);border-radius:6px;background:var(--s2);color:var(--text);min-height:100px;resize:vertical;outline:none;word-break:break-all}
+.bulk:focus{border-color:var(--acc);background:var(--surface)}
+.bulk-readonly{cursor:text;user-select:all}
+.ir{font-size:12px;margin-top:8px;min-height:18px}
+.ir.ok{color:var(--green)}.ir.err{color:var(--red)}.ir.info{color:var(--t2)}
+.copy-btn-row{display:flex;gap:8px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="layout">
+  <div class="sidebar">
+    <div class="sb-head">
+      <h1>履修プランナー<br>経営学研究科 国際経営専攻</h1>
+      <p id="sb-mode-label">博士前期課程 ／ 修了要件：32単位以上</p>
+    </div>
+    <div class="sb-body">
+      <div id="creditBox"></div>
+      <div class="div"></div>
+      <div class="nav-lbl">メニュー</div>
+      <button class="nav active" onclick="switchTab('syl')" id="nav-syl">📋 シラバス一覧 <span class="nc" id="cnt-syl">0</span></button>
+      <button class="nav" onclick="switchTab('sel')" id="nav-sel">✓ 選択済み授業 <span class="nc" id="cnt-sel">0</span></button>
+      <button class="nav" onclick="switchTab('sch')" id="nav-sch">📅 時間割</button>
+      <div class="div" id="edit-section-div"></div>
+      <div class="nav-lbl" id="edit-section-lbl">編集・共有</div>
+      <button class="nav" id="btn-share-nav" onclick="openModal('share')">🔗 共有リンクを生成</button>
+      <button class="nav" id="btn-add-nav" onclick="openModal('add')">＋ 授業を手動追加</button>
+      <button class="nav" id="btn-import-nav" onclick="openModal('import')">↑ JSONインポート</button>
+      <button class="nav" id="btn-export-nav" onclick="openModal('export')">↓ エクスポート</button>
+      <div class="div"></div>
+      <div class="nav-lbl">凡例</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#1d4ed8"></div>演習（必修・指導教授）</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#166534"></div>講義（自由選択）</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#92400e"></div>他研究科・学部（上限8単位）</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div id="view-banner" style="display:none" class="view-banner">
+      <div class="vb-icon">👁</div>
+      <div class="vb-text">
+        <strong>閲覧モード</strong>
+        共有リンクで開いています。編集はできません。
+        <a href="javascript:exitViewMode()" style="color:var(--amber);text-decoration:underline;font-size:12px;display:inline-block;margin-top:4px">← 自分の履修プランに戻る</a>
+      </div>
+    </div>
+
+    <div class="panel active" id="panel-syl">
+      <div class="p-title">シラバス一覧</div>
+      <div class="p-sub">授業を選択して履修計画に追加します。</div>
+      <div class="sr">
+        <input type="text" id="q" placeholder="授業名・教員名で検索…" oninput="renderSyl()">
+        <select id="fSem" onchange="renderSyl()"><option value="">学期：すべて</option><option>前期</option><option>後期</option><option>通年</option></select>
+        <select id="fDay" onchange="renderSyl()"><option value="">曜日：すべて</option><option>月</option><option>火</option><option>水</option><option>木</option><option>金</option><option>時間外</option></select>
+        <select id="fKind" onchange="renderSyl()"><option value="">種別：すべて</option><option value="演習">演習</option><option value="講義">講義</option></select>
+      </div>
+      <div class="ri" id="sylCount"></div>
+      <div class="tw"><table>
+        <thead><tr><th>No.</th><th>授業名</th><th>担当教員</th><th>学期</th><th>曜日時限</th><th>種別</th><th>コード</th><th id="th-act"></th></tr></thead>
+        <tbody id="sylBody"></tbody>
+      </table></div>
+    </div>
+
+    <div class="panel" id="panel-sel">
+      <div class="p-title">選択済み授業</div>
+      <div class="p-sub" id="sel-sub">カテゴリと年次を設定してください。</div>
+      <div class="alert alert-err" id="alertOther"></div>
+      <div class="alert alert-warn" id="alertEnshu"></div>
+      <div id="selList"></div>
+    </div>
+
+    <div class="panel" id="panel-sch">
+      <div class="p-title">時間割</div>
+      <div class="p-sub">選択済み授業の週間スケジュールです。</div>
+      <div class="sc-ctrl">
+        <button class="btn-tg active" onclick="setSchYear('1')" id="yr1">1年次</button>
+        <button class="btn-tg" onclick="setSchYear('2')" id="yr2">2年次</button>
+        <select id="schSem" onchange="renderSch()"><option value="">学期：すべて</option><option>前期</option><option>後期</option></select>
+      </div>
+      <div id="schWrap"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 共有モーダル -->
+<div class="modal-bg" id="modal-share">
+  <div class="modal">
+    <h2>🔗 共有リンクを生成</h2>
+    <p class="msub">現在の選択内容がURLに埋め込まれます。このリンクを教授に送ると、ブラウザで開くだけで閲覧できます。アカウント不要です。</p>
+    <div class="fr">
+      <label>共有リンク</label>
+      <textarea class="bulk bulk-readonly" id="share-url-box" readonly placeholder="「リンクを生成」を押してください"></textarea>
+      <div class="ir" id="share-status"></div>
+      <div class="copy-btn-row">
+        <button class="btn btn-p" onclick="generateShareUrl()">リンクを生成</button>
+        <button class="btn" id="btn-copy-url" onclick="copyShareUrl()" disabled>URLをコピー</button>
+      </div>
+    </div>
+    <p class="fhint" style="margin-top:12px">※ URLはこのHTMLファイルへのパスを含みます。メールに貼り付けてファイルと一緒に送ってください。教授がファイルを同じ場所に保存してURLを開けば閲覧できます。</p>
+    <div class="m-act"><button class="btn" onclick="closeModal('share')">閉じる</button></div>
+  </div>
+</div>
+
+<!-- 手動追加モーダル -->
+<div class="modal-bg" id="modal-add">
+  <div class="modal">
+    <h2>授業を手動追加</h2>
+    <p class="msub">シラバスに1件授業を追加します。</p>
+    <div class="fr"><label>授業名 *</label><input id="f-name" placeholder="例：経営戦略論特講"></div>
+    <div class="f2">
+      <div class="fr"><label>担当教員</label><input id="f-prof" placeholder="例：中山 健"></div>
+      <div class="fr"><label>時間割コード</label><input id="f-code" placeholder="例：24AA015"></div>
+    </div>
+    <div class="f3">
+      <div class="fr"><label>学期</label><select id="f-sem"><option>前期</option><option>後期</option><option>通年</option></select></div>
+      <div class="fr"><label>曜日</label><select id="f-day"><option value="">時間外</option><option>月</option><option>火</option><option>水</option><option>木</option><option>金</option><option>土</option></select></div>
+      <div class="fr"><label>時限</label><select id="f-period"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option></select></div>
+    </div>
+    <div class="f2">
+      <div class="fr">
+        <label>種別</label>
+        <select id="f-kind"><option value="講義">講義</option><option value="演習">演習</option></select>
+      </div>
+      <div class="fr">
+        <label>カテゴリ（単位計算用）</label>
+        <select id="f-cat">
+          <option value="講義">講義（自由選択）</option>
+          <option value="演習（必修）">演習（必修・指導教授）</option>
+          <option value="他研究科・学部">他研究科・学部（上限8単位）</option>
+        </select>
+      </div>
+    </div>
+    <p class="fhint" style="margin-top:-8px;margin-bottom:12px">カテゴリは単位数の集計に使われます。他研究科・学部の授業はここで「他研究科・学部」を選んでください。</p>
+    <div class="fr"><label>メモ（任意）</label><input id="f-memo" placeholder="備考など"></div>
+    <div class="m-act">
+      <button class="btn" onclick="closeModal('add')">キャンセル</button>
+      <button class="btn btn-p" onclick="addManual()">追加する</button>
+    </div>
+  </div>
+</div>
+
+<!-- インポートモーダル -->
+<div class="modal-bg" id="modal-import">
+  <div class="modal">
+    <h2>JSONインポート</h2>
+    <p class="msub">複数の授業を一括追加します。コードが重複する場合はスキップします。</p>
+    <div class="fr">
+      <label>JSONデータ</label>
+      <textarea class="bulk" id="importData" placeholder='[{"name":"経営戦略論特講","prof":"中山 健","code":"24AA015","sem":"前期","day":"月","period":"3","kind":"講義"}]'></textarea>
+      <p class="fhint">フィールド：name（必須）、prof、code、sem（前期/後期/通年）、day（月〜土 or 空欄=時間外）、period（1〜6）、kind（講義/演習）</p>
+    </div>
+    <div class="ir" id="importResult"></div>
+    <div class="m-act">
+      <button class="btn" onclick="closeModal('import')">閉じる</button>
+      <button class="btn btn-p" onclick="doImport()">インポート</button>
+    </div>
+  </div>
+</div>
+
+<!-- エクスポートモーダル -->
+<div class="modal-bg" id="modal-export">
+  <div class="modal">
+    <h2>データエクスポート</h2>
+    <p class="msub">シラバスデータと選択状態をJSONで出力します。バックアップや別端末への移行に使えます。</p>
+    <div class="fr"><label>シラバスデータ（全件）</label><textarea class="bulk bulk-readonly" id="expSyl" readonly style="min-height:80px"></textarea></div>
+    <div class="fr"><label>選択状態</label><textarea class="bulk bulk-readonly" id="expSel" readonly style="min-height:80px"></textarea></div>
+    <div class="m-act">
+      <button class="btn" onclick="copyText('expSyl')">シラバスをコピー</button>
+      <button class="btn" onclick="copyText('expSel')">選択状態をコピー</button>
+      <button class="btn btn-p" onclick="closeModal('export')">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── シラバスデータ ─────────────────────────────────
+const DEFAULT_SYL=[
+  {no:1,name:'経営戦略論特講',prof:'中山 健',sem:'前期',day:'月',period:'3',kind:'講義',code:'24AA015'},
+  {no:2,name:'地域研究IV（日本）',prof:'于 暁飛',sem:'前期',day:'月',period:'3',kind:'講義',code:'24AA065'},
+  {no:3,name:'地域・コミュニティクラスター',prof:'中村 陽一',sem:'前期',day:'月',period:'3',kind:'講義',code:'24AA108'},
+  {no:4,name:'地域研究V（東南アジア）',prof:'高城 玲',sem:'前期',day:'火',period:'1',kind:'講義',code:'24AA058'},
+  {no:5,name:'経営組織論特講',prof:'徐 毅菁',sem:'前期',day:'火',period:'2',kind:'講義',code:'24AA099'},
+  {no:6,name:'技術経営論特講',prof:'田中 美和',sem:'前期',day:'火',period:'3',kind:'講義',code:'24AA001'},
+  {no:7,name:'流通論特講',prof:'中見 真也',sem:'前期',day:'火',period:'4',kind:'講義',code:'24AA109'},
+  {no:8,name:'地域研究I（アメリカ）',prof:'吉留 公太',sem:'前期',day:'火',period:'5',kind:'講義',code:'24AA051'},
+  {no:9,name:'経営分析論特講',prof:'真鍋 明裕',sem:'前期',day:'水',period:'1',kind:'講義',code:'24AA018'},
+  {no:10,name:'企業論特講',prof:'行本 勢基',sem:'前期',day:'木',period:'4',kind:'講義',code:'24AA003'},
+  {no:11,name:'租税法特講',prof:'松岡 弘樹',sem:'前期',day:'木',period:'4',kind:'講義',code:'24AA047'},
+  {no:12,name:'企業論特講（演習）',prof:'行本 勢基',sem:'前期',day:'',period:'',kind:'演習',code:'24AA005'},
+  {no:13,name:'経営分析論特講（演習）',prof:'真鍋 明裕',sem:'前期',day:'',period:'',kind:'演習',code:'24AA019'},
+  {no:14,name:'公企業会計特講（演習）',prof:'関口 博正',sem:'前期',day:'',period:'',kind:'演習',code:'24AA026'},
+  {no:15,name:'国際・異文化コミュニケーション論特講（演習）',prof:'泉水 英計',sem:'前期',day:'',period:'',kind:'演習',code:'24AA029'},
+  {no:16,name:'財政学特講（演習）',prof:'青木 宗明',sem:'前期',day:'',period:'',kind:'演習',code:'24AA038'},
+  {no:17,name:'生産マネジメント特講（演習）',prof:'道用 大介',sem:'前期',day:'',period:'',kind:'演習',code:'24AA045'},
+  {no:18,name:'多国籍企業論特講（演習）',prof:'王 中奇',sem:'前期',day:'',period:'',kind:'演習',code:'24AA049'},
+  {no:19,name:'地域研究I（アメリカ）（演習）',prof:'吉留 公太',sem:'前期',day:'',period:'',kind:'演習',code:'24AA052'},
+  {no:20,name:'地域研究V（東南アジア）（演習）',prof:'高城 玲',sem:'前期',day:'',period:'',kind:'演習',code:'24AA059'},
+  {no:21,name:'国際経営論特講（演習）',prof:'徐 寧教',sem:'前期',day:'',period:'',kind:'演習',code:'24AA070'},
+  {no:22,name:'マーケティング論特講（演習）',prof:'宮澤 薫',sem:'前期',day:'',period:'',kind:'演習',code:'24AA089'},
+  {no:23,name:'経営財務論特講（演習）',prof:'上村 昌司',sem:'前期',day:'',period:'',kind:'演習',code:'24AA095'},
+  {no:24,name:'地域研究II（アジア・太平洋）（演習）',prof:'杉田 弘也',sem:'前期',day:'',period:'',kind:'演習',code:'24AA097'},
+  {no:25,name:'財務会計論特講（演習）',prof:'大田 博樹',sem:'前期',day:'',period:'',kind:'演習',code:'24AA103'},
+  {no:26,name:'地域社会論特講（演習）',prof:'知花 愛実',sem:'前期',day:'',period:'',kind:'演習',code:'24AA105'},
+  {no:27,name:'流通論特講（演習）',prof:'中見 真也',sem:'前期',day:'',period:'',kind:'演習',code:'24AA110'},
+  {no:28,name:'生産マネジメント特講（演習）',prof:'山崎 友彰',sem:'前期',day:'',period:'',kind:'演習',code:'24AA112'},
+  {no:29,name:'国際会計・経営情報特殊研究I（演習）',prof:'青木 宗明',sem:'前期',day:'',period:'',kind:'演習',code:'25AA002'},
+  {no:30,name:'国際会計・経営情報特殊研究II（演習）',prof:'関口 博正',sem:'前期',day:'',period:'',kind:'演習',code:'25AA006'},
+  {no:31,name:'国際会計・経営情報特殊研究II（演習）',prof:'真鍋 明裕',sem:'前期',day:'',period:'',kind:'演習',code:'25AA007'},
+  {no:32,name:'国際経営環境特殊研究II（演習）',prof:'高城 玲',sem:'前期',day:'',period:'',kind:'演習',code:'25AA015'},
+  {no:33,name:'国際経営環境特殊研究III（演習）',prof:'泉水 英計',sem:'前期',day:'',period:'',kind:'演習',code:'25AA018'},
+  {no:34,name:'国際マネジメント特殊研究II（演習）',prof:'行本 勢基',sem:'前期',day:'',period:'',kind:'演習',code:'25AA027'},
+  {no:35,name:'国際マネジメント特殊研究II（演習）',prof:'徐 寧教',sem:'前期',day:'',period:'',kind:'演習',code:'25AA030'},
+  {no:36,name:'国際会計・経営情報特殊研究I（演習）',prof:'上村 昌司',sem:'前期',day:'',period:'',kind:'演習',code:'25AA033'},
+  {no:37,name:'国際会計・経営情報特殊研究II（演習）',prof:'大田 博樹',sem:'前期',day:'',period:'',kind:'演習',code:'25AA036'},
+  {no:38,name:'国際経営環境特殊研究I（演習）',prof:'吉留 公太',sem:'前期',day:'',period:'',kind:'演習',code:'25AA041'},
+  {no:39,name:'消費者行動論特講（演習）',prof:'津村 将章',sem:'前期',day:'',period:'',kind:'演習',code:'25AA044'},
+  {no:40,name:'国際マネジメント特殊研究I（演習）',prof:'道用 大介',sem:'前期',day:'',period:'',kind:'演習',code:'25AA050'},
+  {no:41,name:'国際マネジメント特殊研究I（演習）',prof:'津村 将章',sem:'前期',day:'',period:'',kind:'演習',code:'25AA053'},
+  {no:42,name:'国際マネジメント特殊研究I（演習）',prof:'中見 真也',sem:'前期',day:'',period:'',kind:'演習',code:'25AA056'},
+  {no:43,name:'国際経営環境特殊研究II（演習）',prof:'杉田 弘也',sem:'前期',day:'',period:'',kind:'演習',code:'25AA059'},
+  {no:44,name:'国際会計・経営情報特殊研究I',prof:'青木 宗明',sem:'通年',day:'',period:'',kind:'演習',code:'25AA001'},
+  {no:45,name:'国際会計・経営情報特殊研究II',prof:'関口 博正',sem:'通年',day:'',period:'',kind:'演習',code:'25AA004'},
+  {no:46,name:'国際会計・経営情報特殊研究II',prof:'真鍋 明裕',sem:'通年',day:'',period:'',kind:'演習',code:'25AA005'},
+  {no:47,name:'国際経営環境特殊研究I',prof:'吉留 公太',sem:'通年',day:'',period:'',kind:'演習',code:'25AA011'},
+  {no:48,name:'国際経営環境特殊研究II',prof:'高城 玲',sem:'通年',day:'',period:'',kind:'演習',code:'25AA014'},
+  {no:49,name:'国際経営環境特殊研究III',prof:'泉水 英計',sem:'通年',day:'',period:'',kind:'演習',code:'25AA017'},
+  {no:50,name:'国際マネジメント特殊研究II',prof:'行本 勢基',sem:'通年',day:'',period:'',kind:'演習',code:'25AA026'},
+  {no:51,name:'国際マネジメント特殊研究II',prof:'徐 寧教',sem:'通年',day:'',period:'',kind:'演習',code:'25AA029'},
+  {no:52,name:'国際会計・経営情報特殊研究I',prof:'上村 昌司',sem:'通年',day:'',period:'',kind:'演習',code:'25AA032'},
+  {no:53,name:'国際会計・経営情報特殊研究II',prof:'大田 博樹',sem:'通年',day:'',period:'',kind:'演習',code:'25AA035'},
+  {no:54,name:'国際マネジメント特殊研究I',prof:'道用 大介',sem:'通年',day:'',period:'',kind:'演習',code:'25AA049'},
+  {no:55,name:'国際マネジメント特殊研究I',prof:'津村 将章／道用 大介',sem:'通年',day:'',period:'',kind:'演習',code:'25AA052'},
+  {no:56,name:'国際マネジメント特殊研究I',prof:'中見 真也／道用 大介',sem:'通年',day:'',period:'',kind:'演習',code:'25AA055'},
+  {no:57,name:'国際経営環境特殊研究II',prof:'杉田 弘也／高城 玲',sem:'通年',day:'',period:'',kind:'演習',code:'25AA058'},
+  {no:58,name:'海とみなとクラスター',prof:'関口 博正',sem:'後期',day:'月',period:'1',kind:'講義',code:'24AA107'},
+  {no:59,name:'生産マネジメント特講',prof:'山崎 友彰',sem:'後期',day:'月',period:'2',kind:'講義',code:'24AA044'},
+  {no:60,name:'ベンチャー企業論特講',prof:'中山 健',sem:'後期',day:'月',period:'3',kind:'講義',code:'24AA064'},
+  {no:61,name:'マーケティング論特講',prof:'宮澤 薫',sem:'後期',day:'月',period:'4',kind:'講義',code:'24AA088'},
+  {no:62,name:'多国籍企業論特講',prof:'王 中奇',sem:'後期',day:'月',period:'5',kind:'講義',code:'24AA048'},
+  {no:63,name:'地域研究II（アジア・太平洋）',prof:'杉田 弘也',sem:'後期',day:'火',period:'2',kind:'講義',code:'24AA054'},
+  {no:64,name:'経営財務論特講',prof:'上村 昌司',sem:'後期',day:'火',period:'2',kind:'講義',code:'24AA086'},
+  {no:65,name:'スタートアップクラスター',prof:'藤田 勝利',sem:'後期',day:'火',period:'2',kind:'講義',code:'24AA114'},
+  {no:66,name:'地域社会論特講',prof:'知花 愛実',sem:'後期',day:'火',period:'5',kind:'講義',code:'24AA087'},
+  {no:67,name:'経営学特講',prof:'田中 則仁',sem:'後期',day:'水',period:'1',kind:'講義',code:'24AA007'},
+  {no:68,name:'国際・異文化コミュニケーション論特講',prof:'泉水 英計',sem:'後期',day:'水',period:'2',kind:'講義',code:'24AA028'},
+  {no:69,name:'国際経営論特講',prof:'徐 寧教',sem:'後期',day:'木',period:'2',kind:'講義',code:'24AA035'},
+  {no:70,name:'企業論特講【英語】',prof:'行本 勢基',sem:'後期',day:'木',period:'3',kind:'講義',code:'24AA004'},
+  {no:71,name:'法人税法特講',prof:'松岡 弘樹',sem:'後期',day:'木',period:'4',kind:'講義',code:'24AA066'},
+  {no:72,name:'消費者行動論特講',prof:'津村 将章',sem:'後期',day:'金',period:'2',kind:'講義',code:'24AA085'},
+  {no:73,name:'人的資源管理論特講',prof:'南雲 智映',sem:'後期',day:'金',period:'3',kind:'講義',code:'24AA022'},
+  {no:74,name:'財務会計論特講',prof:'大田 博樹',sem:'後期',day:'金',period:'3',kind:'講義',code:'24AA102'},
+  {no:75,name:'財政学特講',prof:'青木 宗明',sem:'後期',day:'金',period:'4',kind:'講義',code:'24AA037'},
+  {no:76,name:'経営倫理論特講',prof:'ビシュワ・ラズ・カンデル',sem:'後期',day:'金',period:'5',kind:'講義',code:'24AA021'},
+  {no:77,name:'企業論特講（演習）',prof:'行本 勢基',sem:'後期',day:'',period:'',kind:'演習',code:'24AA006'},
+  {no:78,name:'経営分析論特講（演習）',prof:'真鍋 明裕',sem:'後期',day:'',period:'',kind:'演習',code:'24AA020'},
+  {no:79,name:'公企業会計特講（演習）',prof:'関口 博正',sem:'後期',day:'',period:'',kind:'演習',code:'24AA027'},
+  {no:80,name:'国際・異文化コミュニケーション論特講（演習）',prof:'泉水 英計',sem:'後期',day:'',period:'',kind:'演習',code:'24AA030'},
+  {no:81,name:'財政学特講（演習）',prof:'青木 宗明',sem:'後期',day:'',period:'',kind:'演習',code:'24AA039'},
+  {no:82,name:'生産マネジメント特講（演習）',prof:'道用 大介',sem:'後期',day:'',period:'',kind:'演習',code:'24AA046'},
+  {no:83,name:'多国籍企業論特講（演習）',prof:'王 中奇',sem:'後期',day:'',period:'',kind:'演習',code:'24AA050'},
+  {no:84,name:'地域研究I（アメリカ）（演習）',prof:'吉留 公太',sem:'後期',day:'',period:'',kind:'演習',code:'24AA053'},
+  {no:85,name:'地域研究V（東南アジア）（演習）',prof:'高城 玲',sem:'後期',day:'',period:'',kind:'演習',code:'24AA060'},
+  {no:86,name:'国際経営論特講（演習）',prof:'徐 寧教',sem:'後期',day:'',period:'',kind:'演習',code:'24AA071'},
+  {no:87,name:'マーケティング論特講（演習）',prof:'宮澤 薫',sem:'後期',day:'',period:'',kind:'演習',code:'24AA090'},
+  {no:88,name:'経営財務論特講（演習）',prof:'上村 昌司',sem:'後期',day:'',period:'',kind:'演習',code:'24AA096'},
+  {no:89,name:'地域研究II（アジア・太平洋）（演習）',prof:'杉田 弘也',sem:'後期',day:'',period:'',kind:'演習',code:'24AA098'},
+  {no:90,name:'財務会計論特講（演習）',prof:'大田 博樹',sem:'後期',day:'',period:'',kind:'演習',code:'24AA104'},
+  {no:91,name:'地域社会論特講（演習）',prof:'知花 愛実',sem:'後期',day:'',period:'',kind:'演習',code:'24AA106'},
+  {no:92,name:'流通論特講（演習）',prof:'中見 真也',sem:'後期',day:'',period:'',kind:'演習',code:'24AA111'},
+  {no:93,name:'生産マネジメント特講（演習）',prof:'山崎 友彰',sem:'後期',day:'',period:'',kind:'演習',code:'24AA113'},
+  {no:94,name:'国際会計・経営情報特殊研究I（演習）',prof:'青木 宗明',sem:'後期',day:'',period:'',kind:'演習',code:'25AA003'},
+  {no:95,name:'国際会計・経営情報特殊研究II（演習）',prof:'関口 博正',sem:'後期',day:'',period:'',kind:'演習',code:'25AA008'},
+  {no:96,name:'国際会計・経営情報特殊研究II（演習）',prof:'真鍋 明裕',sem:'後期',day:'',period:'',kind:'演習',code:'25AA009'},
+  {no:97,name:'国際経営環境特殊研究II（演習）',prof:'高城 玲',sem:'後期',day:'',period:'',kind:'演習',code:'25AA016'},
+  {no:98,name:'国際経営環境特殊研究III（演習）',prof:'泉水 英計',sem:'後期',day:'',period:'',kind:'演習',code:'25AA019'},
+  {no:99,name:'国際マネジメント特殊研究II（演習）',prof:'行本 勢基',sem:'後期',day:'',period:'',kind:'演習',code:'25AA028'},
+  {no:100,name:'国際マネジメント特殊研究II（演習）',prof:'徐 寧教',sem:'後期',day:'',period:'',kind:'演習',code:'25AA031'},
+  {no:101,name:'国際会計・経営情報特殊研究I（演習）',prof:'上村 昌司',sem:'後期',day:'',period:'',kind:'演習',code:'25AA034'},
+  {no:102,name:'国際会計・経営情報特殊研究II（演習）',prof:'大田 博樹',sem:'後期',day:'',period:'',kind:'演習',code:'25AA037'},
+  {no:103,name:'国際経営環境特殊研究I（演習）',prof:'吉留 公太',sem:'後期',day:'',period:'',kind:'演習',code:'25AA042'},
+  {no:104,name:'消費者行動論特講（演習）',prof:'津村 将章',sem:'後期',day:'',period:'',kind:'演習',code:'25AA045'},
+  {no:105,name:'国際マネジメント特殊研究I（演習）',prof:'道用 大介',sem:'後期',day:'',period:'',kind:'演習',code:'25AA051'},
+  {no:106,name:'国際マネジメント特殊研究I（演習）',prof:'津村 将章',sem:'後期',day:'',period:'',kind:'演習',code:'25AA054'},
+  {no:107,name:'国際マネジメント特殊研究I（演習）',prof:'中見 真也',sem:'後期',day:'',period:'',kind:'演習',code:'25AA057'},
+  {no:108,name:'国際経営環境特殊研究II（演習）',prof:'杉田 弘也',sem:'後期',day:'',period:'',kind:'演習',code:'25AA060'},
+];
+
+const DAYS=['月','火','水','木','金'];
+const PERIODS=['1','2','3','4','5','6','7'];
+const TIMES=['9:00–10:40','10:50–12:30','13:30–15:10','15:20–17:00','17:10–18:50','19:00–20:40','20:45–22:25'];
+const CAT={'演習（必修）':{color:'#1d4ed8',bg:'#eff4ff'},'講義':{color:'#166534',bg:'#f0fdf4'},'他研究科・学部':{color:'#92400e',bg:'#fffbeb'}};
+
+// ── ストレージ & 状態 ───────────────────────────
+let isViewMode = false;
+function loadSyl(){const s=localStorage.getItem('kp_syl_v4');return s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_SYL));}
+function saveSyl(){if(!isViewMode)localStorage.setItem('kp_syl_v4',JSON.stringify(syl));}
+function loadSel(){return JSON.parse(localStorage.getItem('kp_sel_v4')||'[]');}
+function saveSel(){if(!isViewMode)localStorage.setItem('kp_sel_v4',JSON.stringify(sel));}
+let syl=loadSyl(), sel=loadSel();
+
+// ── URL共有：エンコード/デコード ─────────────────
+function encodeShare(selData){
+  const json = JSON.stringify(selData);
+  const bytes = new TextEncoder().encode(json);
+  let binary = '';
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+
+function decodeShare(str){
+  try{
+    const b64 = str.replace(/-/g,'+').replace(/_/g,'/');
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+    const json = new TextDecoder().decode(bytes);
+    return JSON.parse(json);
+  }catch(e){return null;}
+}
+
+
+function generateShareUrl(){
+  if(!sel.length){
+    document.getElementById('share-status').textContent='まず授業を選択してください。';
+    document.getElementById('share-status').className='ir err';
+    return;
+  }
+  const encoded = encodeShare(sel);
+  // file:// でも動くよう相対パスでURLを作る
+  const base = location.href.split('#')[0];
+  const url = base + '#share=' + encoded;
+  document.getElementById('share-url-box').value = url;
+  document.getElementById('btn-copy-url').disabled = false;
+  document.getElementById('share-status').textContent = `✓ ${sel.length}科目のデータをURLに埋め込みました。`;
+  document.getElementById('share-status').className='ir ok';
+}
+
+function copyShareUrl(){
+  const url = document.getElementById('share-url-box').value;
+  if(!url) return;
+  navigator.clipboard.writeText(url).then(()=>{
+    const btn = document.getElementById('btn-copy-url');
+    btn.textContent='コピーしました ✓';
+    setTimeout(()=>btn.textContent='URLをコピー', 2000);
+  });
+}
+
+// ── 起動時：URLパラメータ確認 ──────────────────
+function checkUrlShare(){
+  const hash = location.hash.slice(1);
+  const params = new URLSearchParams(hash);
+  const shareParam = params.get('share');
+  if(!shareParam) return;
+  const decoded = decodeShare(shareParam);
+  if(!decoded || !Array.isArray(decoded) || decoded.length === 0){
+    console.warn('共有データのデコードに失敗しました');
+    return;
+  }
+  // デコードしたsel全体をそのまま使う
+  sel = decoded;
+  syl = JSON.parse(JSON.stringify(DEFAULT_SYL));
+  enterViewMode();
+}
+
+
+function enterViewMode(){
+  isViewMode = true;
+  document.getElementById('view-banner').style.display='flex';
+  document.getElementById('sb-mode-label').textContent='閲覧モード（共有データ）';
+  document.getElementById('sel-sub').textContent='共有された履修計画です。';
+  ['edit-section-div','edit-section-lbl','btn-share-nav','btn-add-nav','btn-import-nav','btn-export-nav']
+    .forEach(id=>{ const el=document.getElementById(id); if(el)el.style.display='none'; });
+}
+
+function exitViewMode(){
+  // 自分のデータに戻る（URLパラメータを除去してリロード）
+  const base = location.href.split('#')[0];
+  location.href = base;
+}
+
+// ── 統計 ───────────────────────────────────────
+function getStats(){
+  let total=0,enshu=0,other=0,y1=0,y2=0;
+  sel.forEach(s=>{total+=2;if(s.cat==='演習（必修）')enshu+=2;if(s.cat==='他研究科・学部')other+=2;if(s.year==='1')y1+=2;else y2+=2;});
+  return{total,enshu,other,y1,y2};
+}
+function renderCredits(){
+  const{total,enshu,other,y1,y2}=getStats();
+  const p=v=>Math.min(100,Math.round(v));
+  document.getElementById('creditBox').innerHTML=`
+    <div class="cr-row"><span class="cr-lbl">取得単位 / 修了要件</span><span class="cr-val ${total>=32?'ok':total>=20?'warn':''}">${total} / 32</span></div>
+    <div class="prog"><div class="prog-f" style="width:${p(total/32*100)}%;background:${total>=32?'#16a34a':'#1d4ed8'}"></div></div>
+    <div class="cr-row"><span class="cr-lbl">演習（必修）</span><span class="cr-val ${enshu>=8?'ok':''}">${enshu} / 8</span></div>
+    <div class="prog"><div class="prog-f" style="width:${p(enshu/8*100)}%;background:#1d4ed8"></div></div>
+    <div class="cr-row" style="margin-top:4px"><span class="cr-lbl">他研究科・学部（上限8）</span><span class="cr-val ${other>8?'err':''}">${other} / 8</span></div>
+    <div class="prog"><div class="prog-f" style="width:${p(other/8*100)}%;background:${other>8?'#dc2626':'#92400e'}"></div></div>
+    <div class="cr-row" style="margin-top:4px"><span class="cr-lbl">1年次 / 2年次</span><span class="cr-val">${y1} / ${y2}</span></div>`;
+  document.getElementById('cnt-sel').textContent=sel.length;
+  document.getElementById('cnt-syl').textContent=syl.length;
+}
+
+// ── シラバス ───────────────────────────────────
+const isAdded=code=>sel.some(s=>s.code===code);
+function renderSyl(){
+  const q=(document.getElementById('q').value||'').trim().toLowerCase();
+  const fS=document.getElementById('fSem').value;
+  const fD=document.getElementById('fDay').value;
+  const fK=document.getElementById('fKind').value;
+  const list=syl.filter(c=>{
+    if(q&&!c.name.toLowerCase().includes(q)&&!(c.prof||'').toLowerCase().includes(q))return false;
+    if(fS&&c.sem!==fS)return false;
+    if(fD){const d=c.day||'';if(fD==='時間外'?d!=='':d!==fD)return false;}
+    if(fK&&c.kind!==fK)return false;
+    return true;
+  });
+  document.getElementById('sylCount').textContent=`${list.length}件 / 全${syl.length}件`;
+  if(isViewMode) document.getElementById('th-act').textContent='状態';
+  document.getElementById('sylBody').innerHTML=list.map(c=>{
+    const added=isAdded(c.code);
+    const hasT=c.day&&c.period;
+    const isE=c.kind==='演習';
+    const act = isViewMode
+      ? `<td><span class="badge ${added?'bd-t':'bd-j'}">${added?'✓ 選択中':'—'}</span></td>`
+      : `<td><button class="btn btn-p" onclick="addToSel('${c.code}')" ${added?'disabled':''} style="min-width:72px">${added?'✓ 追加済':'+ 選択'}</button></td>`;
+    return`<tr>
+      <td class="tn">${c.no||'—'}</td>
+      <td class="tna">${c.name}</td>
+      <td class="tp">${c.prof||'—'}</td>
+      <td>${c.sem||'—'}</td>
+      <td><span class="badge ${hasT?'bd-t':'bd-j'}">${c.day||'時間外'}${c.period?c.period+'限':''}</span></td>
+      <td><span class="badge ${isE?'bd-e':'bd-t'}">${c.kind||'講義'}</span></td>
+      <td class="tc">${c.code||'—'}</td>
+      ${act}
+    </tr>`;
+  }).join('');
+}
+function addToSel(code){
+  if(isViewMode)return;
+  const c=syl.find(s=>s.code===code);
+  if(!c||isAdded(code))return;
+  const defaultCat=c.defaultCat||(c.kind==='演習'?'演習（必修）':'講義');
+  sel.push({code,name:c.name,prof:c.prof,sem:c.sem,day:c.day||'',period:c.period||'',kind:c.kind||'講義',cat:defaultCat,year:'1'});
+  saveSel();render();
+}
+function removeSel(code){if(isViewMode)return;sel=sel.filter(s=>s.code!==code);saveSel();render();}
+function updateSel(code,f,v){
+  if(isViewMode)return;
+  const s=sel.find(x=>x.code===code);
+  if(s){s[f]=v;saveSel();renderCredits();if(document.getElementById('panel-sch').classList.contains('active'))renderSch();}
+}
+
+// ── 選択済み ───────────────────────────────────
+function renderSel(){
+  const{other,enshu}=getStats();
+  const ao=document.getElementById('alertOther');
+  ao.className='alert alert-err'+(other>8?' show':'');
+  ao.textContent=other>8?`⚠ 他研究科・学部が ${other} 単位です。修了要件への算入は上限8単位です。`:'';
+  const ae=document.getElementById('alertEnshu');
+  ae.className='alert alert-warn'+(sel.length>0&&enshu<8?' show':'');
+  ae.textContent=sel.length>0&&enshu<8?`演習（必修）が ${enshu} 単位です。修了には指導教授の演習8単位が必要です。`:'';
+  if(!sel.length){
+    document.getElementById('selList').innerHTML='<div class="empty"><div class="empty-i">📋</div>'+(isViewMode?'選択された授業はありません':'シラバス一覧から授業を選択してください')+'</div>';
+    return;
+  }
+  const order=['前期','後期','通年'];
+  const bySem={};
+  sel.forEach(s=>{if(!bySem[s.sem])bySem[s.sem]=[];bySem[s.sem].push(s);});
+  let html='';
+  order.forEach(sem=>{
+    if(!bySem[sem])return;
+    html+=`<div class="sg-lbl">${sem}<span>${bySem[sem].length}科目 · ${bySem[sem].length*2}単位</span></div>`;
+    html+=bySem[sem].map(s=>{
+      const cs=CAT[s.cat]||CAT['講義'];
+      const t=s.day?`${s.day}${s.period?s.period+'限':''}`:'時間外';
+      const ctrl = isViewMode
+        ? `<div style="display:flex;gap:5px;flex-shrink:0">
+            <span class="badge" style="background:${cs.bg};color:${cs.color}">${s.cat}</span>
+            <span class="badge bd-j">${s.year}年次</span>
+           </div>`
+        : `<div class="si-ctrl">
+            <select onchange="updateSel('${s.code}','cat',this.value)">${Object.keys(CAT).map(c=>`<option ${s.cat===c?'selected':''}>${c}</option>`).join('')}</select>
+            <select onchange="updateSel('${s.code}','year',this.value)"><option ${s.year==='1'?'selected':''} value="1">1年次</option><option ${s.year==='2'?'selected':''} value="2">2年次</option></select>
+            <button class="btn btn-d" onclick="removeSel('${s.code}')">削除</button>
+           </div>`;
+      return`<div class="si">
+        <div class="si-dot" style="background:${cs.color}"></div>
+        <div class="si-info"><div class="si-name">${s.name}</div><div class="si-meta">${s.prof||'—'} ／ ${s.sem} ／ ${t}${s.code?' ／ '+s.code:''}</div></div>
+        ${ctrl}
+        <div class="si-cr">2単位</div>
+      </div>`;
+    }).join('');
+  });
+  document.getElementById('selList').innerHTML=html;
+}
+
+// ── 時間割 ─────────────────────────────────────
+let schYear='1';
+function setSchYear(y){schYear=y;document.getElementById('yr1').classList.toggle('active',y==='1');document.getElementById('yr2').classList.toggle('active',y==='2');renderSch();}
+function renderSch(){
+  const semF=document.getElementById('schSem').value;
+  const inYear=sel.filter(s=>s.year===schYear&&(!semF||s.sem===semF));
+  const timed=inYear.filter(s=>s.day&&s.period);
+  const jikan=inYear.filter(s=>!s.day||!s.period);
+  const grid={};
+  DAYS.forEach(d=>{grid[d]={};PERIODS.forEach(p=>grid[d][p]=[]);});
+  timed.forEach(s=>{if(grid[s.day]&&grid[s.day][s.period])grid[s.day][s.period].push(s);});
+  let html='<div class="schw"><table class="scht"><thead><tr><th>時限</th>';
+  DAYS.forEach(d=>html+=`<th>${d}曜</th>`);
+  html+='</tr></thead><tbody>';
+  PERIODS.forEach((p,pi)=>{
+    html+=`<tr><td class="pc"><div class="pn">${p}</div><div class="pt">${TIMES[pi]}</div></td>`;
+    DAYS.forEach(d=>{html+='<td>'+(grid[d][p]||[]).map(s=>{const cs=CAT[s.cat]||CAT['講義'];return`<div class="sc-card" style="background:${cs.bg};color:${cs.color}"><div class="sc-card-n">${s.name}</div><div class="sc-card-p">${s.prof||''}</div></div>`;}).join('')+'</td>';});
+    html+='</tr>';
+  });
+  html+='</tbody></table></div>';
+  if(jikan.length){
+    html+='<div class="jk-sec"><div class="jk-lbl">時間外・集中講義</div><div class="jk-grid">';
+    html+=jikan.map(s=>{const cs=CAT[s.cat]||CAT['講義'];return`<div class="jk-card" style="border-left-color:${cs.color}"><div class="jk-card-n">${s.name}</div><div class="jk-card-m">${s.prof||'—'} ／ ${s.sem}</div></div>`;}).join('');
+    html+='</div></div>';
+  }
+  if(!inYear.length)html='<div class="empty"><div class="empty-i">📅</div>この年次の授業がまだ選択されていません</div>';
+  document.getElementById('schWrap').innerHTML=html;
+}
+
+// ── タブ ───────────────────────────────────────
+function switchTab(id){
+  ['syl','sel','sch'].forEach(t=>{
+    document.getElementById('panel-'+t).classList.toggle('active',t===id);
+    const n=document.getElementById('nav-'+t);if(n)n.classList.toggle('active',t===id);
+  });
+  if(id==='sel')renderSel();
+  if(id==='sch')renderSch();
+}
+
+// ── モーダル ───────────────────────────────────
+function openModal(id){
+  if(id==="export"){document.getElementById("expSyl").value=JSON.stringify(syl,null,2);document.getElementById("expSel").value=JSON.stringify(sel,null,2);}
+  document.getElementById("modal-"+id).classList.add("open");
+  if(id==="share") generateShareUrl();
+}
+
+
+
+
+function closeModal(id){document.getElementById('modal-'+id).classList.remove('open');}
+document.querySelectorAll('.modal-bg').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
+
+function addManual(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){alert('授業名を入力してください');return;}
+  const code=document.getElementById('f-code').value.trim()||('CUSTOM-'+Date.now());
+  if(syl.find(s=>s.code===code)){alert('このコードはすでに存在します');return;}
+  const maxNo=syl.reduce((m,s)=>Math.max(m,s.no||0),0);
+  const kind=document.getElementById('f-kind').value;
+  const defaultCat=document.getElementById('f-cat').value;
+  syl.push({no:maxNo+1,name,prof:document.getElementById('f-prof').value.trim(),code,sem:document.getElementById('f-sem').value,day:document.getElementById('f-day').value,period:document.getElementById('f-period').value,kind,defaultCat,memo:document.getElementById('f-memo').value.trim()});
+  saveSyl();closeModal('add');
+  ['f-name','f-prof','f-code','f-memo'].forEach(id=>document.getElementById(id).value='');
+  render();
+}
+function doImport(){
+  const raw=document.getElementById('importData').value.trim();
+  const res=document.getElementById('importResult');
+  let data;
+  try{data=JSON.parse(raw);}catch(e){res.className='ir err';res.textContent='JSONの解析に失敗: '+e.message;return;}
+  if(!Array.isArray(data)){res.className='ir err';res.textContent='配列形式で入力してください';return;}
+  let added=0,skipped=0;
+  const maxNo=syl.reduce((m,s)=>Math.max(m,s.no||0),0);
+  data.forEach((d,i)=>{
+    if(!d.name){skipped++;return;}
+    const code=d.code||('IMP-'+Date.now()+'-'+i);
+    if(syl.find(s=>s.code===code)){skipped++;return;}
+    syl.push({no:maxNo+added+1,name:d.name,prof:d.prof||'',code,sem:d.sem||'前期',day:d.day||'',period:String(d.period||''),kind:d.kind||'講義',memo:d.memo||''});
+    added++;
+  });
+  saveSyl();
+  res.className='ir '+(added>0?'ok':'info');
+  res.textContent=`${added}件追加 / ${skipped}件スキップ`;
+  render();
+}
+function copyText(id){navigator.clipboard.writeText(document.getElementById(id).value).then(()=>alert('コピーしました'));}
+
+// ── 起動 ───────────────────────────────────────
+function render(){renderCredits();renderSyl();}
+checkUrlShare(); // URLに共有データがあれば閲覧モードで起動
+render();
+</script>
+</body>
+</html>
